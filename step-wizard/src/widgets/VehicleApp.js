@@ -4,36 +4,22 @@ import { Button } from "@material-ui/core";
 import TextField from '@material-ui/core/TextField';
 import DateFnsUtils from '@date-io/moment';
 import Grid from '@material-ui/core/Grid';
+import { UserInfo } from "./UserInfo"
 
 
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 const steps = [
     {
         stepId: 0, stepName: "vehicle details",
-        metadata: [{ id: "customer Name", "type": "text" },
-        { "id": "Email Address", "type": "text" },
-        { "id": "mobile Number", "type": "number" }]
     },
     {
         stepId: 1, stepName: "OTP Verification",
-        metadata: [
-            { "id": "OTP Verification", "type": "number" }
-        ]
     },
     {
         stepId: 2, stepName: "Vehicle Details",
-        metadata: [
-            { "id": "Vehicle Name", "type": "number" },
-            { "id": "Model", "type": "dropdown", "options": [] },
-            { "id": "Variant Type", "type": "text" },
-            { "id": "Manufacturing Year", "type": "number" },
-            { "id": "Price", "type": "number" }],
     },
     {
         stepId: 3, stepName: "Vehicle Duration",
-        metadata: [
-            { "id": "Bought on", "type": "date" },
-            { "id": "lastDate", "type": "date", },]
     },
 ]
 
@@ -48,7 +34,6 @@ export class VehicleApp extends React.Component {
             formData: {}
         }
         this.onNextStepClick = this.onNextStepClick.bind(this);
-        this.onFinish = this.onFinish.bind(this);
         this.onUpdateFormData = this.onUpdateFormData.bind(this);
         this.onUpdateRecord = this.onUpdateRecord.bind(this)
     }
@@ -62,9 +47,6 @@ export class VehicleApp extends React.Component {
     onUpdateFormData = (data) => {
         this.setState({ record: data })
     }
-    onFinish = () => {
-        // this.setState({ currentStep: this.state.currentStep + 1, stepProgress: this.state.stepProgress + 25 })
-    }
     renderForms = () => {
         const { currentStep } = this.state;
         switch (currentStep) {
@@ -77,18 +59,17 @@ export class VehicleApp extends React.Component {
             case 3:
                 return <DetailForm currentStep={currentStep} formData={this.state.formData} onNextStepClick={this.onNextStepClick.bind(this)} formSchema={steps[currentStep]} />
             default:
-                return <h5>Applicatin saved successfullly</h5>
+                return <UserInfo userInfo={this.state.formData} />
         }
     }
     render() {
         return <div style={{ margin: "5px", border: "5px", padding: "10px" }}>
 
-            <h3>{`${this.state.currentStep} of  ${this.state.totalStep}`}</h3>
+            <h3>{`${this.state.currentStep} of  ${this.state.totalStep} Completed`}</h3>
             <LinearProgress variant="determinate" value={this.state.stepProgress} valueBuffer={100} />
             <Grid Container justify="center">
-            {this.renderForms()}
+                {this.renderForms()}
             </Grid>
-            {this.state.currentStep === this.state.totalStep && <Button onClick={this.onFinish} color="primary">Done</Button>}
         </div>
 
     }
@@ -113,8 +94,7 @@ const CustomerForm = (props) => {
         }
         props.onNextStepClick(data)
     }
-    return   <div>
-
+    return <div>
         <TextField className="input-field" id="customerName" placeholder="Enter Customer Name" type="text" value={custName} onChange={(e) => setCustName(e.target.value)} label="Customer Name" variant="outlined" /><br />
         <TextField className="input-field" id="email" placeholder="Enter email Name" type="email" value={email} onChange={(e) => {
             setEmail(e.target.value)
@@ -124,7 +104,7 @@ const CustomerForm = (props) => {
 
         <TextField className="input-field" id="mobileNo" placeholder="Enter mobile No" type="number" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} label="Mobile No." variant="outlined" /><br />
         <Button onClick={updateRecord} color="primary">Next</Button>
-        </div>
+    </div>
 
 }
 
@@ -137,11 +117,9 @@ const OTPForm = (props) => {
         }
         props.onNextStepClick(data)
     }
-    return <div>
-        <h3>{`OTP has been sent to registered phone No ${props.formData.mobileNo}`} </h3>
+    return <div><h3>{`OTP has been sent to registered phone No ${props.formData.mobileNo}`} </h3>
         <TextField id="Otp" placeholder="Enter OTP sent to you mobile no" type="number" value={otp} onChange={(e) => setOtp(e.target.value)} label="Enter OTP" variant="outlined" /><br />
         <Button onClick={updateRecord} color="primary">Next</Button>
-
     </div>
 
 }
@@ -155,13 +133,20 @@ const VehicleForm = (props) => {
     const [manufacturingYear, setManufacturingYear] = useState("");
     const [price, setPrice] = useState();
 
+    const updateRecord = () => {
+        const data = {
+            vehicleNo,
+            model, variant, manufacturingYear, price
+        }
+        props.onNextStepClick(data)
+    }
     return <div>
         <TextField className="input-field" id="Vehicle No" placeholder="Enter Vehicle No" type="text" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} label="Customer Name" variant="outlined" /><br />
         <TextField className="input-field" id="Model" placeholder="Enter model Name" type="email" value={model} onChange={(e) => { setModel(e.target.value) }} label="Model" variant="outlined" /><br />
         <TextField className="input-field" id="Variant Type" placeholder="Enter Varient Type" type="text" value={variant} onChange={(e) => setVariant(e.target.value)} label="Variant" variant="outlined" /><br />
         <TextField className="input-field" id="Manufacturing Year" placeholder="Enter Manufacturing Year" type="number" value={manufacturingYear} onChange={(e) => setManufacturingYear(e.target.value)} label="Mobile No." variant="outlined" /><br />
         <TextField className="input-field" id="Price" placeholder="Enter mobile No" type="number" value={price} onChange={(e) => setPrice(e.target.value)} label="Price" variant="outlined" /><br />
-        <Button onClick={props.onNextStepClick} color="primary">Next</Button>
+        <Button onClick={updateRecord} color="primary">Next</Button>
 
     </div>
 
@@ -171,7 +156,13 @@ const DetailForm = (props) => {
     const { formSchema } = props;
     const [boughtDate, setBoughtDate] = useState("");
     const [lastDate, setLastDate] = useState("");
-
+    const updateRecord = () => {
+        const data = {
+            boughtDate,
+            lastDate
+        }
+        props.onNextStepClick(data)
+    }
 
     return <div>
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -187,7 +178,7 @@ const DetailForm = (props) => {
                 KeyboardButtonProps={{
                     'aria-label': 'change date',
                 }}
-            />
+            /><br />
             <KeyboardDatePicker
                 margin="normal"
                 id="lastDate"
@@ -198,10 +189,11 @@ const DetailForm = (props) => {
                 KeyboardButtonProps={{
                     'aria-label': 'change date',
                 }}
-            />
+            /><br />
+            <Button onClick={updateRecord} color="primary">Next</Button>
+
         </MuiPickersUtilsProvider>
 
-        <Button onClick={props.onNextStepClick} color="primary">Next</Button>
 
 
     </div>

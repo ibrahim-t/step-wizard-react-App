@@ -14,5 +14,7 @@ code {
 }
 .input-field{
   padding: 10px !important; 
-
+}
+.MuiGrid-justify-xs-center{
+  text-align: -webkit-center;
 }
